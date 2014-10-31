@@ -1,0 +1,42 @@
+body {
+	font-size: 14px;
+	line-height: 1.2em;
+}
+
+
+p {
+	color: #666;
+	line-height: 1.5em;
+	font-family: Arial, Helvetica, "Nimbus Sans L", sans-serif;
+}
+
+a,
+a:link {
+	color: #1E85AC;
+}
+
+h2 {
+	
+}
+
+h3 {
+/*
+	color: #666;
+	font-size: 1.17em;
+	line-height: 1.282em;
+	margin-top: 1.282em;
+	margin-bottom: 1.282em;
+*/
+  margin: 0;
+  color: #8CAA62;
+  font-weight: 400;
+  font-family: 'PT Sans Caption';
+}
+
+h4 {
+	
+}
+
+h5 {
+	
+}

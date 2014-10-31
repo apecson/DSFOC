@@ -1,0 +1,191 @@
+<?php
+
+/**
+ * @file
+ * Custom dsfoc Code
+ */
+
+/**
+ * Implements hook_views_default_views_alter()
+ *
+ * Removes Ajax from admin views
+ */
+function dsfoc_custom_views_default_views_alter(&$views) {
+  if (isset($views['admin_views_comment'])) {
+    $views['admin_views_comment']->display['default']->display_options['use_ajax'] = FALSE;
+  }
+  if (isset($views['admin_views_node'])) {
+    $views['admin_views_node']->display['default']->display_options['use_ajax'] = FALSE;
+  }
+  if (isset($views['admin_views_taxonomy_term'])) {
+    $views['admin_views_taxonomy_term']->display['default']->display_options['use_ajax'] = FALSE;
+  }
+  if (isset($views['admin_views_user'])) {
+    $views['admin_views_user']->display['default']->display_options['use_ajax'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_views_post_execute()
+ */
+function dsfoc_custom_views_post_execute(&$view) {
+  if ($view->name == 'free_content') {
+    usort($view->result, 'dsfoc_custom_sort_product_type');
+  }
+  
+}
+
+function dsfoc_custom_sort_product_type($a, $b) {
+  if ($a->taxonomy_term_data_field_data_field_free_product_type_weight == $b->taxonomy_term_data_field_data_field_free_product_type_weight) {
+    return strcmp($a->node_title, $b->node_title);
+  }
+  
+  return $a->taxonomy_term_data_field_data_field_free_product_type_weight < $b->taxonomy_term_data_field_data_field_free_product_type_weight ? -1 : 1;
+}
+
+/*
+ * Implements hook_permission()
+ */
+function dsfoc_custom_permission() {
+  return array(
+    'submit entityform types' => array(
+      'title' => t('Submit entityform types'),
+      'description' => t('Submit entityforms types. Individual form access is still required.'),
+    ),
+  );
+}
+
+/** 
+ * Implements hook_menu_alter().
+ */
+function dsfoc_custom_menu_alter(&$items) {
+  if (!empty($items['node/%node/clone']['type'])) {
+    $items['node/%node/clone']['type'] = MENU_LOCAL_TASK;
+  }
+  unset($items['admin/content/files']);
+  // clear help menus
+  unset($items['admin/advanced_help']);
+  unset($items['admin/help']);
+  unset($items['node']);
+}
+
+/*
+ * Implements hook_entity_info_alter()
+ */
+function dsfoc_custom_entity_info_alter(&$info) {
+  $info['entityform_type']['access callback'] = 'dsfoc_custom_entityform_type_access';
+}
+
+/**
+ * Implements hook_form_alter()
+ */
+function dsfoc_custom_form_alter(&$form, &$form_state, $form_id) {
+  // hide meta tags
+  if (!empty($form['metatags']) && empty($form['#node_edit_form'])) {
+    $form['metatags']['#access'] = FALSE;
+  }
+  
+  // set default content type settings
+  if ($form_id == 'node_type_form' && empty($form['#node_type']->type)) {
+    $form['workflow']['node_options']['#default_value'] = array(
+      0 => 'status',
+      1 => 'revision',
+    );
+    $form['submission']['node_preview']['#default_value'] = 0;
+    $form['comment']['comment']['#default_value'] = 0;
+    $form['display']['node_submitted']['#default_value'] = FALSE;
+  }
+}
+
+/*
+ * Altered access callback for entityform_type
+ */
+function dsfoc_custom_entityform_type_access($op, $type = NULL, $account = NULL) {
+  if ($op == 'view' && user_access('submit entityform types', $account)) {
+    return TRUE;
+  }
+  
+  return entityform_type_access($op, $type, $account);
+}
+
+/*
+ * Implements hook_block_info()
+ */
+
+function dsfoc_custom_block_info() {
+
+    $blocks['login_block'] = array(
+    	'info' => t('Custom Login Block'),
+    	);
+    
+    return $blocks;
+	
+}
+ 
+/*
+ * Implements hook_block_view()
+ */ 
+ 
+function dsfoc_custom_block_view($delta = '') {
+	
+	$block = array();
+	
+	switch($delta) {
+	
+		case 'login_block':
+		$block['content'] = dsfoc_custom_login_block();
+		break;
+	}
+	
+	return $block;
+}
+
+
+function dsfoc_custom_login_block() {
+	$output = '';
+	global $user;
+
+	if (!empty($user->uid)) {
+		$output['account'] = array(
+			'#markup' => l(t('Hello, '. $user->name) , 'user', array('attributes' => array('class' => 'header-link')))
+			);		
+	}
+		$output['cart'] = array(
+			'#markup' => l(t('My Cart'), 'cart', array('attributes' => array('class' => 'header-link')))
+			);
+			
+	if (!empty($user->uid)) {
+		$output['logout'] = array(
+			'#markup' => l(t('Logout'), 'user/logout', array('attributes' => array('class' => 'header-link')))
+			);
+	} else {
+		$output['login'] = array(
+			'#markup' => l(t('Login'), 'user', array('attributes' => array('class' => 'header-link')))
+			);
+		$output['create'] = array(
+			'#markup' => l(t('Create an Account'), 'user/register', array('attributes' => array('class' => 'header-link')))
+			);
+	}
+	
+  return $output;	
+}
+	
+
+function dsfoc_custom_user_login(&$edit, $account) {
+/*   redirect to home after login */
+  $edit['redirect'] = 'node/1';
+}
+
+
+function dsfoc_custom_node_view($node, $view_mode, $langcode) {
+  global $user;
+
+  if(empty($user->uid) && $node->type == 'product_display') {
+    //$node->content['field_product']['#access'] = FALSE;
+/*     $node->content['field_product']['LANGUAGE_NONE'][0]['#markup'] = '<p>Please Login to add to cart</p>'; */
+  }
+
+}
+  
+
+	

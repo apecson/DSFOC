@@ -1,0 +1,6 @@
+name = dsfoc Custom Code
+description = Custom Code for the dsfoc site.
+package = dsfoc
+core = 7.x
+
+scripts[] = dsfoc_custom.js
