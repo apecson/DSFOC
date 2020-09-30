@@ -1,11 +1,10 @@
-
-CONTENTS OF THIS FILE
+FILE WITH IMPORTANT CONTENTS
 ---------------------
 
- * About Drupal
- * Configuration and features
- * Appearance
- * Developing for Drupal
+ ** About Drupal
+ ** Configuration and features
+ ** Appearance
+ ** Developing for Drupal
 
 ABOUT DRUPAL
 ------------
